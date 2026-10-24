@@ -4,25 +4,19 @@ An agentic retrieval-augmented generation framework for building-science questio
 
 Companion code for *From Naive RAG to Agentic RAG: A Multimodal STAR Agentic RAG Framework for Building Science Question Answering* (Saadatnasab et al.).
 
-## Pipeline overview
+## Overall research framework
 
-```mermaid
-flowchart TD
-    Q[Question] --> S[Sense: classify type and complexity]
-    S --> T[Triage: assess specialized evidence needs]
-    T --> A[Act: route corpus and retrieve evidence]
-    A --> J{Evidence sufficient?}
-    J -->|Refine query| A
-    J -->|Proceed| R{Reflect: answer path}
-    R --> F[Factual answer and reflection]
-    R --> C[Generate Python, execute and verify]
-    F --> O[Answer and diagnostic workbook]
-    C --> O
-```
+[![Overall research framework from manuscript Figure 2](assets/figures/research-framework.png)](assets/figures/research-framework.png)
 
-The diagram summarizes the workflow; retrieval and reflection loops are bounded by the implementation. Specialized modality triage is used on the factual branch. The computational branch uses retrieved evidence to generate code and checks the execution result.
+**Figure 2.** Overall research framework: single-pass RAG development, STAR Agentic RAG development, and three-way comparative evaluation, built on the multimodal knowledge base.
 
-## STAR architecture
+## STAR Agentic RAG architecture
+
+[![STAR architecture with Sense, Triage, Act, and Reflect stages from manuscript Figure 4](assets/figures/star-architecture.png)](assets/figures/star-architecture.png)
+
+**Figure 4.** The proposed STAR framework: unified classification, multimodal knowledge triage, dynamic retrieval with corpus routing and query refinement, and dual-path answer generation with self-verification.
+
+Click a figure to view the full-size image. These figures reproduce the manuscript architecture; the module table and inference guide describe the supplied implementation.
 
 | Stage | What it does | Implementation |
 |---|---|---|
@@ -30,6 +24,12 @@ The diagram summarizes the workflow; retrieval and reflection loops are bounded 
 | **Triage** | Assesses image, formula, and table evidence and distills useful context | [pipeline.py](src/star_agentic_rag/pipeline.py), [retrieval.py](src/star_agentic_rag/retrieval.py) |
 | **Act** | Selects a chunking corpus; retrieves with BM25, dense FAISS, fusion, MMR, and reranking; refines queries | [retrieval.py](src/star_agentic_rag/retrieval.py), [config.py](src/star_agentic_rag/config.py) |
 | **Reflect** | Reflects on factual answers or generates Python, executes it, and verifies computational results | [pipeline.py](src/star_agentic_rag/pipeline.py), [sandbox.py](src/star_agentic_rag/sandbox.py) |
+
+## Hybrid retrieval architecture
+
+[![Single-pass RAG architecture from manuscript Figure 3](assets/figures/single-pass-rag.png)](assets/figures/single-pass-rag.png)
+
+**Figure 3.** Parallel dense and sparse retrieval, weighted score fusion, MMR diversification, and cross-encoder reranking before answer generation.
 
 ## Research workflow
 
