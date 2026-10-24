@@ -110,7 +110,3 @@ See [tests/README.md](tests/README.md) for test scope. Generated-code execution 
 ## Citation
 
 Associated manuscript: **From Naive RAG to Agentic RAG: A Multimodal STAR Agentic RAG Framework for Building Science Question Answering**, Saadatnasab et al. Publication venue and DOI will be added when available.
-
-## License
-
-MIT. See [LICENSE](LICENSE). The code license does not grant rights to external corpora, standards, textbooks, model weights, or datasets.
