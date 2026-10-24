@@ -1,4 +1,4 @@
-"""Configuration defaults for Scout-Agentic RAG.
+"""Configuration defaults for STAR Agentic RAG.
 
 Paths are repository-relative examples, not bundled corpora. Supply your own corpora.
 """

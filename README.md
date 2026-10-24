@@ -1,125 +1,116 @@
-# STAR-Agentic-RAG
+# STAR Agentic RAG: Sense–Triage–Act–Reflect
 
-A modular implementation of the STAR (Sense–Triage–Act–Reflect) Agentic RAG pipeline for building-energy-science question answering. The workflow combines question classification, question-type-aware retrieval, optional image/formula/table retrieval, query refinement, reflective generation, and code execution for computational questions.
+An agentic retrieval-augmented generation framework for building-science question answering. STAR classifies each question, triages formula/table/figure evidence, routes retrieval across chunking strategies, and generates answers through a reflective factual path or a computational path with Python execution and verification.
+
+Companion code for *From Naive RAG to Agentic RAG: A Multimodal STAR Agentic RAG Framework for Building Science Question Answering* (Saadatnasab et al.).
 
 ## Pipeline overview
 
-1. Classify each question as factual or computational, estimate complexity, and label its question format.
-2. For factual questions, triage image, formula, and table corpora and distill useful information.
-3. Select a main corpus based on question type and run hybrid retrieval (dense + BM25, score fusion, MMR, and cross-encoder reranking).
-4. Judge retrieval sufficiency and iteratively rewrite queries to target missing information.
-5. Generate and reflect on factual answers; computational questions generate Python code, execute it with basic checks, verify the result, and format the answer.
-6. Save answers and diagnostic columns to an Excel workbook with periodic checkpoints.
-
-## Repository layout
-
-```text
-src/scout_agentic_rag/
-  config.py       Portable defaults and routing constants
-  prompts.py      LLM prompt templates
-  state.py        LangGraph state schema
-  response_parsing.py Structured response parsing
-  io_utils.py     Excel input/output helpers
-  llm.py          OpenAI-compatible / Ollama client and chat retries
-  sandbox.py      Generated-code execution helper
-  retrieval.py    Corpus loading and hybrid retrieval
-  pipeline.py     LangGraph workflow and conditional routing
-  cli.py          Command-line entry point
-  __main__.py     Enables python -m scout_agentic_rag
+```mermaid
+flowchart TD
+    Q[Question] --> S[Sense: classify type and complexity]
+    S --> T[Triage: assess specialized evidence needs]
+    T --> A[Act: route corpus and retrieve evidence]
+    A --> J{Evidence sufficient?}
+    J -->|Refine query| A
+    J -->|Proceed| R{Reflect: answer path}
+    R --> F[Factual answer and reflection]
+    R --> C[Generate Python, execute and verify]
+    F --> O[Answer and diagnostic workbook]
+    C --> O
 ```
 
-## Installation
+The diagram summarizes the workflow; retrieval and reflection loops are bounded by the implementation. Specialized modality triage is used on the factual branch. The computational branch uses retrieved evidence to generate code and checks the execution result.
 
-Python 3.10 or later is recommended.
+## STAR architecture
+
+| Stage | What it does | Implementation |
+|---|---|---|
+| **Sense** | Classifies factual/computational intent, complexity, and question format | [pipeline.py](src/star_agentic_rag/pipeline.py), [prompts.py](src/star_agentic_rag/prompts.py) |
+| **Triage** | Assesses image, formula, and table evidence and distills useful context | [pipeline.py](src/star_agentic_rag/pipeline.py), [retrieval.py](src/star_agentic_rag/retrieval.py) |
+| **Act** | Selects a chunking corpus; retrieves with BM25, dense FAISS, fusion, MMR, and reranking; refines queries | [retrieval.py](src/star_agentic_rag/retrieval.py), [config.py](src/star_agentic_rag/config.py) |
+| **Reflect** | Reflects on factual answers or generates Python, executes it, and verifies computational results | [pipeline.py](src/star_agentic_rag/pipeline.py), [sandbox.py](src/star_agentic_rag/sandbox.py) |
+
+## Research workflow
+
+| # | Stage | What it does | Guide |
+|---|---|---|---|
+| 1 | Chunking | Builds hierarchical, content-type-aware, parent-child, and atomic-block corpora from prepared Markdown | [01_chunking](01_chunking/README.md) |
+| 2 | Baselines | Runs no-retrieval LLM inference and single-pass hybrid RAG, with API and Ollama variants | [02_baselines](02_baselines/README.md) |
+| 3 | STAR Agentic RAG | Runs the full agentic workflow and records answers and diagnostics | [03_star_agentic_rag](03_star_agentic_rag/README.md) |
+| 4 | Evaluation | Judges generated answers against reference answers | [04_evaluation](04_evaluation/README.md) |
+
+Each folder has a README covering its scripts, inputs, commands, and outputs. For the upstream PDF preparation workflow, see the companion [MRP-MSHRAG repository](https://github.com/ssaadatnasab/MRP-MSHRAG).
+
+## Repository structure
+
+```text
+.
+├── 01_chunking/                  # Four chunking strategies + README
+├── 02_baselines/                 # LLM and hybrid RAG scripts + README
+├── 03_star_agentic_rag/           # Full inference setup and usage guide
+├── 04_evaluation/                # Answer judger + README
+├── src/
+│   └── star_agentic_rag/         # Installable STAR implementation + module guide
+├── tests/                       # Helper tests + testing guide
+├── .env.example                 # Provider configuration template
+├── pyproject.toml               # Package metadata, dependencies, CLI entry point
+├── requirements.txt
+├── SECURITY.md
+├── LICENSE
+└── README.md
+```
+
+## Setup
+
+Python 3.10+ is required. Run these commands from a terminal:
 
 ```bash
 git clone https://github.com/ssaadatnasab/STAR-Agentic-RAG.git
 cd STAR-Agentic-RAG
 python -m venv .venv
-# macOS/Linux
 source .venv/bin/activate
 # Windows PowerShell: .venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -e ".[dev]"
+python -m pip install -e ".[dev]"
+cp .env.example .env
 ```
 
-If you prefer a requirements file, use `pip install -r requirements.txt`.
+Edit `.env` locally with your provider settings, or set the environment variables in your shell. See [the inference guide](03_star_agentic_rag/README.md) for API and Ollama configuration. Chunking scripts may need additional dependencies listed in [their guide](01_chunking/README.md).
 
-## Configure a provider
+## Quick start
 
-### OpenAI or another OpenAI-compatible API
-
-Optionally copy `.env.example` to `.env` and edit it locally (the `.env` file is ignored by Git). You can also set variables in your shell. Never commit real credentials.
+Supply a workbook containing `Question` and `Answer` columns and your prepared corpora. Replace `YOUR_MODEL_NAME` with a model served by your endpoint:
 
 ```bash
-export OPENAI_API_KEY="your-key"
-# Optional for a compatible third-party endpoint:
-# export OPENAI_BASE_URL="https://your-endpoint.example/v1"
+star-agentic-rag \
+  --provider openai-compatible \
+  --model YOUR_MODEL_NAME \
+  --input data/questions.xlsx \
+  --output results/answers.xlsx \
+  --corpus data/corpora/atomic_block \
+  --atomic_block_corpus data/corpora/atomic_block \
+  --content_type_aware_corpus data/corpora/content_type_aware \
+  --parent_child_corpus data/corpora/parent_child
 ```
 
-Run with your input workbook and corpus paths:
+The Python package is `star_agentic_rag`, and the installed command is `star-agentic-rag`. You can also run `python -m star_agentic_rag` with the same arguments. See [the full inference guide](03_star_agentic_rag/README.md) for modality corpora, retrieval settings, checkpoints, and output columns.
 
-```bash
-scout-agentic-rag   --provider openai-compatible   --input data/questions.xlsx   --output results/answers.xlsx   --corpus data/corpora/markdown-aware-atomic-block-protection   --model gpt-5.5
-```
+## Data and reproducibility
 
-### Local Ollama
-
-Start Ollama and pull a model available on your machine. The default endpoint is `http://127.0.0.1:11434/v1`.
-
-```bash
-ollama pull llama3.1:70b
-scout-agentic-rag   --provider ollama   --input data/questions.xlsx   --output results/answers-ollama.xlsx   --corpus data/corpora/markdown-aware-atomic-block-protection   --model llama3.1:70b
-```
-
-You can also run the CLI with `python -m scout_agentic_rag ...`.
-
-## Input workbook
-
-The first sheet of the `.xlsx` input is loaded. A question column is required; accepted normalized names include `question`, `questions`, `prompt`, and `query`. A reference-answer column is also currently required; accepted names include `answer`, `answers`, `goldanswer`, `referenceanswer`, and `groundtruth`. The reference answer is carried into the output for evaluation; it is not used as a target during generation.
-
-Rows with a non-empty `Result` value are skipped so an interrupted run can be resumed. Use `--start_row N` to start from a specific 1-indexed spreadsheet row, including the header row in the numbering convention used by the script.
-
-## Corpus organization
-
-Corpus files are not included. Supply corpus folders containing `.jsonl` chunk files and/or `.md` files. The parent-child corpus expects `strategy3_children.jsonl` and `strategy3_parents.jsonl`.
-
-The main corpus plus three chunking-strategy expert corpora are configurable with:
-
-- `--corpus`
-- `--content_type_aware_corpus`
-- `--parent_child_corpus`
-- `--atomic_block_corpus`
-
-The specialized Stage 0.5 corpora can be configured with `--image_corpus`, `--formula_corpus`, and `--table_corpus`. They are optional; missing corpora are reported as unavailable.
-
-Common retrieval parameters include `--rag_k`, `--embedding_model`, `--reranker_model`, `--bm25_top_k`, `--dense_top_k`, `--fused_top_k`, `--mmr_target_k`, and `--mmr_lambda`. See `scout-agentic-rag --help` for the full list.
-
-## Output
-
-The output workbook preserves the input question/reference answer and adds `Result`, retrieval context, routing decisions, multimodal triage information, generated code and execution logs, verification outcomes, and reflection diagnostics. The output directory is created automatically. Checkpoints default to every five processed rows for OpenAI-compatible endpoints and every row for Ollama; change this with `--save-every`.
-
-## Important limitations
-
-- Model-generated answers and calculations can be wrong. The reflection and verification steps are automated checks, not guarantees of correctness.
-- The code-execution helper is **not a hardened sandbox**. Do not execute untrusted generated code outside an independently isolated environment. See [SECURITY.md](SECURITY.md).
-- Retrieval quality depends on how your source documents are parsed, chunked, indexed, and licensed.
-- Hardware and model requirements vary. Embedding and reranker initialization can require substantial memory and may download model weights on first use.
-- Avoid sharing proprietary or copyrighted corpus files unless you have permission to redistribute them.
-
-## Research scripts and paper context
-
-The `experiments/` directory preserves the supplied standalone scripts for chunking, baseline inference, single-pass hybrid RAG, parent-child variants, local Ollama variants, and Qwen judging. Embedded API keys have been removed. These scripts retain environment-specific path defaults and are provided as research references; adjust paths and model/provider settings before running them. See [experiments/README.md](experiments/README.md).
-
-The associated manuscript is *From Naive RAG to Agentic RAG: A Multimodal STAR Agentic RAG Framework for Building Science Question Answering* (Saadatnasab et al.). It describes a knowledge base of 181 textbooks and a comparison of no-retrieval, single-pass RAG, and STAR across multiple models. The manuscript, benchmark questions, textbook corpus, and model outputs are not distributed here. The code has not been independently reproduced against the paper's reported results.
+The manuscript describes a knowledge base of 181 textbooks. Textbooks, benchmark workbooks, prepared corpora, model weights, and generated results are not included. Supply data you are authorized to use and record model names and settings for each run. The standalone scripts retain research-environment defaults; provide explicit paths and check their provider configuration before use. The paper's numerical results have not been independently reproduced in this repository setup.
 
 ## Development
 
 ```bash
-pytest
-ruff check src tests
+python -m pytest
 ```
+
+See [tests/README.md](tests/README.md) for test scope. Generated-code execution is a subprocess helper with basic checks, not a hardened sandbox; see [SECURITY.md](SECURITY.md).
+
+## Citation
+
+Associated manuscript: **From Naive RAG to Agentic RAG: A Multimodal STAR Agentic RAG Framework for Building Science Question Answering**, Saadatnasab et al. Publication venue and DOI will be added when available.
 
 ## License
 
-MIT. See [LICENSE](LICENSE). This license applies to this repository's code; it does not grant rights to external corpora, standards, textbooks, model weights, or datasets.
+MIT. See [LICENSE](LICENSE). The code license does not grant rights to external corpora, standards, textbooks, model weights, or datasets.

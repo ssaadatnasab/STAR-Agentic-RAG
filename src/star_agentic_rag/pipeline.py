@@ -1,4 +1,4 @@
-"""LangGraph orchestration for the Scout-Agentic RAG workflow."""
+"""LangGraph orchestration for the STAR Agentic RAG workflow."""
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 import re

@@ -25,7 +25,7 @@ from .state import AgentState
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Agentic RAG + Code — Pipeline 3.5 Scout-Agentic RAG (LangGraph)"
+        description="Agentic RAG + Code — Pipeline 3.5 STAR Agentic RAG (LangGraph)"
     )
     parser.add_argument("--input", required=True, help="Input .xlsx file")
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
@@ -189,7 +189,7 @@ def main():
     agent = make_graph(client, main_retrievers, args.model, args.max_context_chars,
                         multimodal_retrievers=multimodal_retrievers, provider=args.provider)
     print(
-        "✅ Pipeline 3.5 (Scout-Agentic RAG) graph compiled:\n"
+        "✅ Pipeline 3.5 (STAR Agentic RAG) graph compiled:\n"
         "   [factual]       classify_type → multimodal_triage (Stage 0.5) → retrieve → relevance "
         "→ [rewrite→] generate → reflect → [refine→] END\n"
         "   [computational] classify_type → retrieve (Stage 0.5 bypassed) → relevance → [rewrite→] "

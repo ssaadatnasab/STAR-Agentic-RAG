@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from scout_agentic_rag.io_utils import resolve_input_columns, _normalize_question_type
-from scout_agentic_rag.sandbox import _check_imports, _extract_code_block
+from star_agentic_rag.io_utils import resolve_input_columns, _normalize_question_type
+from star_agentic_rag.sandbox import _check_imports, _extract_code_block
 
 
 def test_resolve_input_columns_is_case_and_punctuation_insensitive():
@@ -34,7 +34,7 @@ def test_code_block_extraction():
 
 
 def test_sandbox_executes_simple_calculation():
-    from scout_agentic_rag.sandbox import _execute_python_sandbox
+    from star_agentic_rag.sandbox import _execute_python_sandbox
 
     output, success = _execute_python_sandbox("print(6 * 7)")
     assert success
@@ -43,7 +43,7 @@ def test_sandbox_executes_simple_calculation():
 
 def test_llm_call_uses_ollama_compatible_token_parameters():
     from types import SimpleNamespace
-    from scout_agentic_rag.llm import _llm_call
+    from star_agentic_rag.llm import _llm_call
 
     captured = {}
 

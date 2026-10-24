@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "scout-agentic-rag"
+name = "star-agentic-rag"
 version = "0.1.0"
 description = "A modular agentic RAG pipeline for building-energy science questions"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
-authors = [{name = "Scout-Agentic RAG contributors"}]
+authors = [{name = "STAR Agentic RAG contributors"}]
 dependencies = [
   "openai>=1.40.0", "pandas>=2.0.0", "openpyxl>=3.1.0", "numpy>=1.24.0",
   "langgraph>=0.2.0", "langchain-core>=0.3.0", "langchain-huggingface>=0.1.0",
@@ -21,7 +21,7 @@ dependencies = [
 dev = ["pytest>=8.0.0", "ruff>=0.6.0"]
 
 [project.scripts]
-scout-agentic-rag = "scout_agentic_rag.cli:main"
+star-agentic-rag = "star_agentic_rag.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
