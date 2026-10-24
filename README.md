@@ -2,10 +2,6 @@
 
 A modular implementation of the STAR (Sense–Triage–Act–Reflect) Agentic RAG pipeline for building-energy-science question answering. The workflow combines question classification, question-type-aware retrieval, optional image/formula/table retrieval, query refinement, reflective generation, and code execution for computational questions.
 
-> **Research code notice:** This repository is a refactor of research code, not a claim of production readiness. Validate results for your corpus, models, and benchmark before using them in research or engineering decisions.
-
-The installable Python package and CLI retain the internal name `scout_agentic_rag` from the research implementation. The public repository name follows the paper's STAR terminology.
-
 ## Pipeline overview
 
 1. Classify each question as factual or computational, estimate complexity, and label its question format.
