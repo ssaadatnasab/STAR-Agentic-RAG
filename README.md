@@ -8,13 +8,13 @@ Companion code for *From Naive RAG to Agentic RAG: A Multimodal STAR Agentic RAG
 
 [![Overall research framework from manuscript Figure 2](assets/figures/research-framework.png)](assets/figures/research-framework.png)
 
-**Figure 2.** Overall research framework: single-pass RAG development, STAR Agentic RAG development, and three-way comparative evaluation, built on the multimodal knowledge base.
+**Figure 1.** Overall research framework: single-pass RAG development, STAR Agentic RAG development, and three-way comparative evaluation, built on the multimodal knowledge base.
 
 ## STAR Agentic RAG architecture
 
 [![STAR architecture with Sense, Triage, Act, and Reflect stages from manuscript Figure 4](assets/figures/star-architecture.png)](assets/figures/star-architecture.png)
 
-**Figure 4.** The proposed STAR framework: unified classification, multimodal knowledge triage, dynamic retrieval with corpus routing and query refinement, and dual-path answer generation with self-verification.
+**Figure 2.** The proposed STAR framework: unified classification, multimodal knowledge triage, dynamic retrieval with corpus routing and query refinement, and dual-path answer generation with self-verification.
 
 Click a figure to view the full-size image. These figures reproduce the manuscript architecture; the module table and inference guide describe the supplied implementation.
 
